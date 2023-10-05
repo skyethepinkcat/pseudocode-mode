@@ -28,7 +28,7 @@
 
 ;; Example pseudocode syntax:
 
-;; Algorithm doX(a, b)
+;; Function doX(a, b)
 ;; Input a and b
 ;; Output does x
 ;; a <- 1
@@ -39,7 +39,7 @@
 ;; This program has a minor mode in which it matches blocks like this:
 ;;
 ;; /*
-;;  * Algorithm doX(a, b)
+;;  * Function doX(a, b)
 ;;  * Input a and b
 ;;  * Output does x
 ;;  * a <- 1
@@ -47,7 +47,7 @@
 ;;  *   doSomething(a, b)
 ;;  * return a * b
 ;;  */
-;; That is, C style comments beginning with Algorithm.
+;; That is, C style comments beginning with Function.
 
 ;;; Code:
 (require 'ht)
@@ -55,7 +55,7 @@
 
 
 (defconst pseudocode-keyword-list
-  '(Algorithm
+  '(Function
     Input
     Output
     <--
@@ -87,12 +87,12 @@
                            concat (format "\\|%s%s%s" b item a))))
   "Keywords in psuedocode.")
 
-(defconst pseudocode-match-algorithm-name
-  "\\(Algorithm \\)\\(.+\\)\\(?: ?(\\)"
-  "Matches the algorithm name of the psuedocode")
+(defconst pseudocode-match-function-name
+  "\\(Function \\)\\(.+\\)\\(?: ?(\\)"
+  "Matches the function name of the psuedocode")
 
-(defconst pseudocode-match-algorithm-variable-declaration
-  "\\(Algorithm [^(]+(\\)\\([^,]\\(, ?\\)\\)+\\([^)]\\))"
+(defconst pseudocode-match-function-variable-declaration
+  "\\(Function [^(]+(\\)\\([^,]\\(, ?\\)\\)+\\([^)]\\))"
   "Matches variable names in the algoirhtm definition")
 
 (defconst pseudocode-match-variable-declaration
@@ -104,9 +104,9 @@
 
 (setq pseudocode-mode-highlights
       `((,pseudocode-keywords 0 font-lock-keyword-face)
-        (,pseudocode-match-algorithm-name 2 font-lock-function-name-face)
-        (,pseudocode-match-algorithm-variable-declaration 2 font-lock-variable-name-face)
-        (,pseudocode-match-algorithm-variable-declaration 4 font-lock-variable-name-face)
+        (,pseudocode-match-function-name 2 font-lock-function-name-face)
+        (,pseudocode-match-function-variable-declaration 2 font-lock-variable-name-face)
+        (,pseudocode-match-function-variable-declaration 4 font-lock-variable-name-face)
         (,pseudocode-match-variable-declaration 1 font-lock-variable-name-face)))
 
 ;;;###autoload
@@ -114,11 +114,11 @@
   "A mode for editing and viewing psuedocode."
   (setq font-lock-defaults '(pseudocode-mode-highlights)))
 
-;; code for finding comments and highlighting algorithms in them
+;; code for finding comments and highlighting functions in them
 
-(defconst pseudocode-algorithm-comment-matcher
-  "/\\*[ \n\\*]*Algorithm [$_a-zA-Z][$_a-zA-Z0-9]*?(\\([$_a-zA-Z][$_a-zA-Z0-9]*,? ?\\)*)\\(.\\|\n\\)+?\\*/"
-  "Matches comments with algorithms")
+(defconst pseudocode-function-comment-matcher
+  "/\\*[ \n\\*]*Function [$_a-zA-Z][$_a-zA-Z0-9]*?(\\([$_a-zA-Z][$_a-zA-Z0-9]*,? ?\\)*)\\(.\\|\n\\)+?\\*/"
+  "Matches comments with functions")
 
 (defun pseudocode-re-noerr (regexp &optional bound count)
   (re-search-forward regexp bound t count))
@@ -126,7 +126,7 @@
 (defun pseudocode-overlay-one-comment ()
   (with-silent-modifications
     (let ((case-fold-search nil))
-      (when (pseudocode-re-noerr pseudocode-algorithm-comment-matcher nil)
+      (when (pseudocode-re-noerr pseudocode-function-comment-matcher nil)
         (let ((beg (match-beginning 0))
               (end (match-end 0))
               (varlist (ht-create)))
@@ -137,12 +137,12 @@
               (overlay-put o 'pseudocode t)
               (overlay-put o 'face 'font-lock-keyword-face)))
           (goto-char beg)
-          (when (pseudocode-re-noerr pseudocode-match-algorithm-name end)
+          (when (pseudocode-re-noerr pseudocode-match-function-name end)
             (let ((o (make-overlay (match-beginning 2) (match-end 2))))
               (overlay-put o 'pseudocode t)
               (overlay-put o 'face font-lock-function-name-face)))
           (goto-char beg)
-          (pseudocode-re-noerr "Algorithm [^(]+?(" end)
+          (pseudocode-re-noerr "Function [^(]+?(" end)
           (let ((keep-going t))
             (while keep-going
               (let* ((param-list-beg (point))
@@ -184,7 +184,7 @@
 
 ;;;###autoload
 (define-minor-mode pseudocode-comment-mode
-  "A minor mode for highlighting algorithms in c style comments"
+  "A minor mode for highlighting functions in c style comments"
   nil
   "pseudocode-comments"
   nil
