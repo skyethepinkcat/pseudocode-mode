@@ -58,13 +58,16 @@
   '(Algorithm
     Input
     Output
+    function
     <--
     <-
     if
     then
     else
     NOT
+    not
     AND
+    and
     while
     repeat
     return))
